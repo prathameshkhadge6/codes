@@ -1,0 +1,92 @@
+var express = require('express');
+const { all } = require('express/lib/application');
+const { get } = require('express/lib/request');
+const res = require('express/lib/response');
+
+var app = express()
+var fs = require('fs')
+app.set('port', process.env.PORT || 3000)
+const filePath = './event.json';
+
+//fill your code
+// Reading data from json file
+const getData = () =>{
+    const jsonData = fs.readFileSync(filePath);
+    return JSON.parse(jsonData);
+};
+
+// Get a particular event details
+const getEvent = (id) => {
+    const jsonData = fs.readFileSync(filePath);
+    const d = JSON.parse(jsonData);
+    const eventData = JSON.stringify(d['event-'+id]);
+    return eventData;
+}
+const saveData = (data) => {
+    const d1 = JSON.stringify(data);
+    fs.writeFileSync(filePath,d1);
+};
+const updateData = (id,key,value) => {
+    const allData = getData();
+    // const parsed = JSON.parse(allData);
+    const d1 = getEvent(id);
+    if(d1 == undefined)
+    {
+        return undefined;
+    }
+    else
+    {
+        const parsedD1 = JSON.parse(d1);
+        parsedD1[key] = value;
+        console.log('parsedD1[key] = ',parsedD1[key])
+        const idd = 'event-'+id;
+        allData[idd] = parsedD1;
+        console.log('allData[idd] = ',allData[idd])
+        // console.log(JSON.stringify(allData))
+        saveData(allData);
+        return allData;
+    }
+}
+const deleteData = (id) => {
+    const allData = getData();
+    delete allData['event-'+id];
+    // allData.delete('event-1')
+    saveData(allData);
+}
+app.get('/listAllEvents',(req, res) => {
+    const data = getData();
+    res.send(JSON.stringify(data));
+});
+
+app.get('/showEvent/:id',(req, res) => {
+    const eventData = getEvent(req.params.id);
+    if(eventData == undefined)
+    {
+        res.send('Event is not found')
+    }
+    res.send(eventData);
+});
+
+app.get('/updateEvent/:id/:key/:value',(req, res) => {
+    const u = updateData(req.params.id,req.params.key,req.params.value);
+    if(u == undefined)
+    {
+        res.send('Event is not found')
+    }
+    else
+    {
+        res.redirect(`/showEvent/${req.params.id}`);
+    }
+});
+app.get('/deleteEvent/:id',(req, res) => {
+    if(getEvent(req.params.id) == undefined)
+    {
+        res.send('Event is not found')
+    }
+    else
+    {
+        deleteData(req.params.id)
+        res.redirect('/listAllEvents')
+    }
+});
+app.listen(app.get('port'))

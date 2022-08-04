@@ -1,0 +1,311 @@
+// =============== action.js ===============
+const ADD_FRUIT = "ADD_FRUIT";
+const REMOVE_FRUIT = "REMOVE_FRUIT";
+
+export const addFruit =(fruit)=>{
+    return{
+        type: ADD_FRUIT,
+        payload: fruit
+    };
+};
+
+export const removeFruit=(fruit)=>{
+    return{
+        type: REMOVE_FRUIT,
+        payload: fruit
+    };
+};
+
+
+// =========== App.css =============
+// .main-container{
+//     display: flex;
+// }
+
+// .fruit-list{
+//     margin: 2px 10px;
+//     display: flex;
+//     flex-wrap: wrap;
+// }
+
+// .cart{
+//     margin: 2px 10px;
+// }
+
+// ============ App.js =============
+import React from "React";
+import Home from "./Home";
+import store from "./store";
+import {Provider} from "react-redux";
+import "./App.css";
+
+const App=()=>{
+    return(
+        <div className="body">
+            <Provider store={store}>
+                <h1>Fresh Fruits</h1>
+                <img src="" alt="header-img" />
+                <Home />
+            </Provider>    
+        </div>
+    );
+};
+export default App;
+
+
+// ========== Home.js ===========
+import React from "react";
+import {connect} from "react-redux";
+import {addFruit, removeFruit} from "./action";
+
+const Home =(props)=>{
+    const onAddFruit=(e)=>{
+        const fruitId=e.target.id.slice(-1);
+        const idx=parseInt(fruitId)-1;
+        props.removeFruit(props.fruitList[idx]);
+    };
+
+    const onRemoveFruit=(e)=>{
+        const fruitId=e.target.id.slice(-1);
+        const idx=parseInt(fruitId)-1;
+        props.removeFruit(props.fruitList[idx]);
+    };
+
+    const calculateTotal=()=>{
+        let total=0;
+        for(let i=0;i<props.fruitList.length;i++)
+        {
+            total+=
+                parseInt(props.fruitList[i].orderCount)*
+                parseInt(props.fruitList[i].amount);
+        }
+        return total;
+    };
+    return(
+        <div className="main-container">
+            <div className="fruit-list">
+                {props.fruitList.map((fruit)=>(
+                    <div id={`item${fruit.id}`} className="cardIteration" key={fruit.id}>
+                        <img id={`img${fruit.id}`} src={fruit.imagePath} alt="imageOf" />
+                        <p id={`nmae${fruit.id}`}>{fruit.name}</p>
+                        <p>
+                            <s id={`strikeAmount${fruit.id}`}>
+                            </s>
+                            <span id={`originalAmount${fruit.id}`}>
+                                {"$"+fruit.amount+"/pack"}    
+                            </span>
+                        </p>
+                        <p id={`countryName${fruit.id}`}>
+                            {`Country of Origin : ${fruit.country}`}
+                        </p>
+                        {fruit.orderCount===0 ? (
+                            <button id={`button${fruit.id}`} onClick={onAddFruit}>
+                                Add
+                            </button>    
+                        ) : (
+                            <div>
+                                <button id={`addQuantity${fruit.id}`} onClick={onAddFruit}>
+                                    +
+                                </button>
+                                <span>{fruit.orderCount}</span>
+                                <button id={`reduceQuantity${fruit.id}`} onClick={onRemoveFruit}>
+                                    -
+                                </button>
+                            </div>
+                        )}
+                        </div>
+                ))}
+            </div>  
+            <div className="cart">
+                <h3 id="orderHeader">Your Order</h3>
+                <div>
+                    {props.fruitList.map(
+                        (fruit)=>
+                            fruit.orderCount > 0 && (
+                                <div>
+                                    <img id={`img${fruit.id}`} src={fruit.imagepath} alt="imageof" />
+                                    <p>
+                                        {fruit.name}
+                                        <span>
+                                            <button id={`addQuantity${fruit.id}`} onClick={onAddFruit}>
+                                                    +
+                                                </button>
+                                        
+                                            <span>{fruit.orderCount}</span>
+                                                <button id={`reduceQuantity${fruit.id}`} onClick={onRemoveFruit}>
+                                                    -
+                                                </button>
+                                        </span>
+                                    </p>
+                                </div>
+                            )
+                    )}
+                </div>
+                {calculateTotal() !==0 && (
+                    <button>{`Order Place ($${calculateTotal()})`}</button>
+                )}
+            </div>  
+        </div>
+    );
+
+};
+
+const mapStateToProps=(state)=>{
+    return{
+        fruitList: state.fruitList,
+    };
+};
+
+const mapDispatchToProps=(dispatch)=>{
+    return{
+        addFruit:(fruit)=>dispatch(addFruit(fruit)),
+        removeFruit:(fruit)=>dispatch(removeFruit(fruit))
+    };
+};
+
+
+
+// ===========index.js============
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import * as serviceWorker from './serviceWorker';
+import { BrowserRouter } from "react-router-dom";
+
+ReactDOM.render(
+    <BrowserRouter basename={`${process.env.PUBLIC_URL}`}> 
+        <App />
+    </BrowserRouter>,
+    document.getElementById('root')
+);
+
+serviceWorker.unregister();
+
+
+// =============reducer.js================
+const ADD_FRUIT="ADD_FRUIT";
+const REMOVE_FRUIT="REMOVE_FRUIT";
+const fruitList=[
+    {
+        id:1,
+        name:"Orange",
+        orderCount:0,
+        amount:200,
+        // imagePath: require("../images/orange.jpg"),
+        country:"France",
+        strikeRate:300,
+    },
+    {
+        id:2,
+        name:"Apple",
+        orderCount:0,
+        amount:400,
+        // imagePath: require("../images/apple.png"),
+        country:"France",
+        strikeRate:650,
+    },
+    {
+        id:3,
+        name:"Mango",
+        orderCount:0,
+        amount:50,
+        // imagePath: require("../images/mango.jpg"),
+        country:"France",
+        strikeRate:100,
+    },
+    {
+        id:4,
+        name:"Strawberry",
+        orderCount:0,
+        amount:150,
+        // imagePath: require("../images/strawBerry.webp"),
+        country:"France",
+        strikeRate:200,
+    },
+    {
+        id:5,
+        name:"Pineapple",
+        orderCount:0,
+        amount:280,
+        // imagePath: require("../images/pineapple.jpg"),
+        country:"France",
+        strikeRate:320,
+    },
+    {
+        id:6,
+        name:"Avocado",
+        orderCount:0,
+        amount:350,
+        // imagePath: require("../images/Avocado.jpg"),
+        country:"France",
+        strikeRate:480,
+    },
+    {
+        id:7,
+        name:"Banana",
+        orderCount:0,
+        amount:200,
+        // imagePath: require("../images/banana.jpg"),
+        country:"France",
+        strikeRate:280,
+    },
+    {
+        id:8,
+        name:"Blackcurrant",
+        orderCount:0,
+        amount:200,
+        // imagePath: require("../images/Blackcurrant.jpg"),
+        country:"France",
+        strikeRate:230,
+    },
+];
+const initialState={fruitList};
+const reducer=(state=initialState,{type,payload})=>{
+    switch(type){
+        case ADD_FRUIT:
+            return{
+                ...state,
+                fruitList:state.fruitList.map((fruit)=>{
+                    if(fruit.id===payload.id){
+                        return {...fruit,orderCount:fruit.orderCount+1};
+                    }else{
+                        return {...fruit};
+                    }
+                }),
+            };
+            case REMOVE_FRUIT:
+                return {
+                    ...state,
+                    fruitList: state.fruitList.map((fruit)=>{
+                        if(fruit.id===payload.id){
+                            return{...fruit,orderCount: fruit.orderCount-1};
+                        }else{
+                            return{ ...fruit};
+                        }
+                    }),
+                };
+                default:
+                    return state;
+
+    }
+};
+
+export default reducer;
+
+// ============ store.js==============
+import {createStore} from "redux";
+import reducer from "./reducer";
+
+const store=createStore(
+    reducer,
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
+export default store;
+
+
+// =================setupTests.js============
+import '@testing-library/jest-dom/extend-expect';
+import {configure} from 'enzyme';
+        import Adapter from 'enxyme-adapter-react-16';
+        configure({adapter:new Adapter()});
